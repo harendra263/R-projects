@@ -1,0 +1,39 @@
+library(shiny)
+library(shinydashboard)
+
+shinyUI(
+  dashboardPage(
+    dashboardHeader(title = "This is the Header",
+                    dropdownMenu(type = "message",
+                                 messageItem(from = "finance update", message = "We are on threshold"),
+                                 messageItem(from = "Sales update", message = "Sales are at 55%", icon = icon("bar-chart"),time = "22:00"),
+                                 messageItem(from = "Sales update", message = "Sales meeting at 6 PM on Monday", icon = icon("handshake-o"), time = "02:00")
+                                 )
+                    ),
+    dashboardSidebar(
+      sliderInput("bins","Number of breaks",1,100,50),
+      sidebarMenu(
+        menuItem("Dashboard",tabName = "dashboard", icon = icon("dashboard")),
+        menuSubItem("Dashboard Finance", tabName = "finance", icon = icon("inr")),
+        menuSubItem("Dashboard Sales", tabName = "sales", icon = icon("inr")),
+        menuItem("Detailed Analysis"),
+        menuItem("Raw data")
+      )),
+    dashboardBody(
+      tabItems(
+        tabItem(tabName = "dashboard",
+                fluidRow(
+                  box(plotOutput("histogram"))
+                  
+                )),
+        tabItem(tabName = "finance",
+                h1("Finance Dashboard")
+        ),
+        tabItem(tabName = "sales",
+                h2("Sales Dashboard")
+        )
+      )
+    )
+  )
+) 
+
