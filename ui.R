@@ -1,17 +1,22 @@
 library(shiny)
-library(arules)
-library(arulesViz)
+library(shinydashboard)
 
-shinyUI(fluidPage(
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("sup","select the support",
-                  choices = c(.1,.01,.05,.001,.005)),
-      selectInput("conf","select the confidence",
-                  choices = c(.5,.6,.7,.8,.9))
+shinyUI(
+  dashboardPage(
+    dashboardHeader(title = "This is the Header"),
+    dashboardSidebar(
+      sliderInput("bins","Number of breaks",1,100,50),
+      menuItem("Dashboard"),
+      menuSubItem("Dashboard Finance"),
+      menuSubItem("Dashboard Sales"),
+      menuItem("dDetailed Analysis"),
+      menuItem("Raw data")
     ),
-    mainPanel(
-      verbatimTextOutput("mba")
+    dashboardBody(
+      fluidRow(
+        box(plotOutput("histogram"))
+        
+      )
     )
   )
-))
+)

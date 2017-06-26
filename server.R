@@ -1,10 +1,9 @@
 library(shiny)
-library(arules)
+library(shinydashboard)
 
-shinyServer(function(input,output){
+shinyServer(function(input, output){
   
-  output$mba <- renderPrint({
-    rules <- apriori(Groceries,parameter = list(support=as.numeric(input$sup),
-                                                confidence=as.numeric(input$conf)))
+  output$histogram <- renderPlot({
+    hist(faithful$eruptions, breaks = input$bins)
   })
 })
