@@ -1,7 +1,7 @@
 library(tm)
 options(header=FALSE, stringsAsFactors = FALSE,FileEncoding="latin1")
 setwd("C:/Users/brai/Desktop/RFiles")
-text <- readLines("RAI2009.txt")
+text <- readLines("TOI2009.txt")
  
 corpus <- Corpus(VectorSource(text))
  
