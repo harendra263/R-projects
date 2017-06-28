@@ -1,0 +1,174 @@
+
+# linear Regression
+
+library(ggplot2)
+library(car)
+library(caret)
+library(corrplot)
+
+data("mtcars")
+
+head(mtcars)
+
+summary(mtcars)
+
+mtcars$am <- as.factor(mtcars$am)
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$vs <- as.factor(mtcars$vs)
+mtcars$gear <- as.factor(mtcars$gear)
+
+
+
+mtcars_a <- subset(mtcars , select = -c(mpg))
+numericData <- mtcars_a[sapply(mtcars_a,is.numeric)]
+
+#Calculating Correlation
+
+Correlation <- cor(numericData)
+
+# Print correlation matrix and look at max correlation
+
+print(Correlation)
+
+# Visualize Correlation Matrix
+corrplot(Correlation , order = "FPC", method = "color",type = 'lower',tl.cex = 0.7,
+         tl.col = rgb(0,0,0))
+# Visualize Correlation Matrix
+highlyCorrelated <- findCorrelation(Correlation,cutoff = 0.7)
+
+#Identifying Variable Names of Highly Correlated Variables
+highlycorcol <- colnames(numericData)[highlyCorrelated] 
+
+
+#Print highly correlated attributes
+
+print(highlycorcol)
+
+#Remove highly correlated variables and create a new dataset
+
+dat3 <- mtcars[ , -which(colnames(mtcars) %in% highlycorcol)]
+
+dim(dat3)
+
+#Build Linear Regression Model
+
+fit <- lm(mpg ~ . , data = dat3)
+
+# Check model performance
+summary(fit)
+
+#Extracting Coefficients
+summary(fit)$coeff
+anova(fit)
+
+par(mfrow =c(2,2))
+plot(fit)
+
+
+#Extracting R squared Values
+summary(fit)$r.squared
+
+#Extracting Adjusted R-squared value
+summary(fit)$adj.r.squared
+
+AIC(fit)
+
+BIC(fit)
+
+#Stepwise Selection based on AIC
+library(MASS)
+
+step <- stepAIC(fit, direction = "both")
+summary(step)
+
+#Backward Selection based on AIC
+step <- stepAIC(fit, direction = "backward")
+summary(step)
+
+#Forward Selection based on AIC
+step <- stepAIC(fit, direction="forward")
+summary(step)
+
+
+# Stepwise selection with BIC
+n=dim(dat3)[1]
+stepBIC <- stepAIC(fit, K=log(n))
+summary(stepBIC)
+
+summary(stepBIC)
+lm(formula = mpg ~ vs + am + carb, data = dat3)
+
+#Standardised coefficients
+library(QuantPsyc)
+lm.beta(stepBIC)
+
+
+#R Function : Manual Calculation of Standardised coefficients
+stdz.coff <- function (regmodel)
+{ b <- summary(regmodel)$coef[-1,1]
+sx <- sapply(regmodel$model[-1], sd)
+sy <- sapply(regmodel$model[1], sd)
+beta <- b * sx / sy
+return(beta)
+}
+
+std.Coeff = data.frame(Standardized.Coeff = stdz.coff(stepBIC))
+std.Coeff = cbind(Variable = row.names(std.Coeff), std.Coeff)
+row.names(std.Coeff) = NULL
+
+
+# Calculating Variance Inflation Factor (VIF)
+
+vif(stepBIC)
+
+
+#Autocorrelation Test
+durbinWatsonTest(stepBIC)
+
+#Normality Of Residuals (Should be > 0.05)
+res=residuals(stepBIC,type="pearson")
+shapiro.test(res)
+
+#Testing for heteroscedasticity (Should be > 0.05)
+ncvTest(stepBIC)
+
+#Outliers – Bonferonni test
+outlierTest(stepBIC)
+
+#See Residuals
+resid = residuals(stepBIC)
+
+#Relative Importance
+install.packages("relaimpo")
+library(relaimpo)
+calc.relimp(stepBIC)
+
+
+#See Predicted Value
+pred = predict(stepBIC,dat3)
+#See Actual vs. Predicted Value
+finaldata = cbind(mtcars,pred)
+print(head(subset(finaldata, select = c(mpg,pred))))
+
+#Calculating RMSE
+rmse = sqrt(mean((dat3$mpg - pred)^2))
+print(rmse)
+
+#Calculating Rsquared manually
+y = dat3[,c("mpg")]
+R.squared = 1 - sum((y-pred)^2)/sum((y-mean(y))^2)
+print(R.squared)
+
+#Calculating Adj. Rsquared manually
+n = dim(dat3)[1]
+p = dim(summary(stepBIC)$coeff)[1] - 1
+adj.r.squared = 1 - (1 - R.squared) * ((n - 1)/(n-p-1))
+print(adj.r.squared)
+
+#Box Cox Transformation
+library(lmSupport)
+modelBoxCox(stepBIC)
+
+
+
+
